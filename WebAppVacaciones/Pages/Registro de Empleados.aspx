@@ -8,6 +8,8 @@
             background-color: #08a0de; /* Cambia el color de fondo del botón cuando se pasa el mouse por encima */
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </asp:Content>
 <asp:Content ID="Content3" ContentPlaceHolderID="body" runat="server">
     

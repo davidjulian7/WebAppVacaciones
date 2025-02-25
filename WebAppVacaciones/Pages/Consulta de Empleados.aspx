@@ -243,7 +243,7 @@
 
 
 
-    <!-- Modal para modificar las vacaciones -->
+    <!-- Modal para agregar las vacaciones -->
     <div class="modal" id="modalAgregarVacacion">
         <div class="modal-background"></div>
         <div class="modal-card">
@@ -254,7 +254,12 @@
                 <div class="field">
                     <label class="label">Tipo de dia</label>
                     <div class="control">
-                        <asp:DropDownList ID="DropDownListDia" runat="server" CssClass="input"></asp:DropDownList>
+                            <asp:DropDownList ID="DropDownListDia" runat="server" CssClass="input">
+                            <asp:ListItem Text="Seleccione..." Value="" />
+                            <asp:ListItem Text="Todo el día" Value="N"></asp:ListItem>
+                            <asp:ListItem Text="Mañana" Value="M"></asp:ListItem>
+                            <asp:ListItem Text="Tarde" Value="T"></asp:ListItem>
+                        </asp:DropDownList>
                     </div>
                 </div>
 
@@ -272,7 +277,7 @@
                     runat="server"
                     CssClass="button is-primary"
                     Text="Guardar"
-                    OnClick="btnGuardar_Click" />
+                    OnClick="btnGuardarAgregado_Click" />
                 <asp:HiddenField ID="HiddenField1" runat="server" />
 
                 <button class="button" onclick="cerrarModal()">Cerrar</button>
@@ -290,6 +295,17 @@
                 var modal = document.getElementById('modalAgregarVacacion');
                 modal.classList.remove('is-active');
             }
+
+            function disableOtherOptions() {
+                var ddl = document.getElementById('<%= DropDownListDia.ClientID %>');
+                for (var i = 2; i < ddl.options.length; i++) {
+                    ddl.options[i].disabled = true;
+                }
+            }
+
+            // Llama a la función al cargar la página
+            window.onload = disableOtherOptions;
+
         </script>
 
 </asp:Content>

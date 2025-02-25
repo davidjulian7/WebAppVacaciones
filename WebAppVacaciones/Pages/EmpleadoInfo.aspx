@@ -93,13 +93,6 @@
                         <asp:TemplateField HeaderText="Vacaciones">
                             <ItemTemplate>
                                 <asp:Button
-                                    ID="btnVacaciones"
-                                    runat="server"
-                                    Text="Historial"
-                                    CommandName="Consultar"
-                                    CommandArgument='<%# Eval("ID_Empleado") %>'
-                                    CssClass="button is-info boton-estandar" />
-                                <asp:Button
                                     ID="btnSolicitar"
                                     runat="server"
                                     Text="Solicitar"
@@ -108,9 +101,17 @@
                                     CssClass="button is-success boton-estandar"
                                     OnClientClick="abrirModalVadAdd(); return false;" />
                                 <asp:Button
+                                    ID="btnVacaciones"
+                                    runat="server"
+                                    Text="Aprobados"
+                                    CommandName="Consultar"
+                                    CommandArgument='<%# Eval("ID_Empleado") %>'
+                                    CssClass="button is-info boton-estandar" />
+
+                                <asp:Button
                                     ID="btnDiasSolicitados"
                                     runat="server"
-                                    Text="Pendientes"
+                                    Text="Historial"
                                     CommandName="Solicitados"
                                     CommandArgument='<%# Eval("ID_Empleado") %>'
                                     CssClass="button is-warning boton-estandar" />

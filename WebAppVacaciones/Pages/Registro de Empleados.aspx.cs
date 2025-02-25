@@ -148,13 +148,10 @@ namespace WebAppVacaciones
         // Método para mostrar mensajes al usuario (ya sea de éxito o error)
         private void MostrarMensaje(string mensaje, bool esError)
         {
-            // Determina el tipo de alerta según si es error o éxito
             string tipoAlerta = esError ? "error" : "success";
-            // Mostrar una alerta en pantalla con el mensaje
-            string script = $"alert('{mensaje}');"; // Aquí podrías usar toastr, alert, u otra librería de notificaciones
-
-            // Registrar el script para ejecutarlo en la página web
+            string script = $"Swal.fire({{title: '{(esError ? "Error" : "Éxito")}', text: '{mensaje}', icon: '{tipoAlerta}', confirmButtonText: 'OK'}});";
             ScriptManager.RegisterStartupScript(this, this.GetType(), "alertMessage", script, true);
         }
+
     }
 }

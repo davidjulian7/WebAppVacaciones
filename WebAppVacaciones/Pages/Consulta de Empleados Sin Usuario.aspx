@@ -97,6 +97,8 @@
             </div>
         </div>
     </section>
+
+
     <!-- Modal para mostrar las vacaciones -->
     <div class="modal" id="modalModificarEmpleadoSinUsuario">
         <div class="modal-background"></div>

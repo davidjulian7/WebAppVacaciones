@@ -16,11 +16,6 @@ namespace WebAppVacaciones.Pages
                 CargarDatos();
                 CargarPDV();
                 CargarPuestos(); // Cargar el DropDownList de Puestos desde la base de datos
-
-                DropDownListDia.Items.Add(new ListItem("Seleccionar tipo de dia", ""));
-                DropDownListDia.Items.Add(new ListItem("Mañana", "1"));
-                DropDownListDia.Items.Add(new ListItem("Tarde", "2"));
-                DropDownListDia.Items.Add(new ListItem("Dia completo", "3"));
             }
         }
 
@@ -54,11 +49,20 @@ namespace WebAppVacaciones.Pages
 
         protected void gridDetallesEmpleado_RowCommand(object sender, GridViewCommandEventArgs e)
         {
-            int userId = Convert.ToInt32(e.CommandArgument);
+            int userId = Convert.ToInt32(e.CommandArgument);  // Este es el ID del empleado, no el índice.
 
             if (e.CommandName == "Agregar")
             {
-                ScriptManager.RegisterStartupScript(this, GetType(), "abrirModalVadAdd", "abrirModalVadAdd();", true);
+                // Obtener la fila utilizando el ID de empleado (no el índice)
+                GridViewRow row = GetRowByUserId(userId);
+                if (row != null)
+                {
+                    // Obtener el ID del empleado desde la celda 0 y guardarlo en un HiddenField
+                    hfEmpleadoID.Value = row.Cells[0].Text;
+
+                    // Abrir el modal después de seleccionar el empleado
+                    ScriptManager.RegisterStartupScript(this, GetType(), "AbrirModal", "abrirModalVadAdd();", true);
+                }
             }
             else if (e.CommandName == "Consultar")
             {
@@ -66,7 +70,6 @@ namespace WebAppVacaciones.Pages
             }
             else if (e.CommandName == "Actualizar")
             {
-
                 int rowIndex = Convert.ToInt32(e.CommandArgument);
                 GridViewRow row = gridDetallesEmpleado.Rows[rowIndex];
 
@@ -85,8 +88,111 @@ namespace WebAppVacaciones.Pages
             {
                 EliminarUsuario(userId);
             }
-
         }
+
+        // Método auxiliar para obtener la fila basada en el ID del empleado
+        private GridViewRow GetRowByUserId(int userId)
+        {
+            foreach (GridViewRow row in gridDetallesEmpleado.Rows)
+            {
+                // Suponiendo que el ID del empleado está en la primera celda
+                if (Convert.ToInt32(row.Cells[0].Text) == userId)
+                {
+                    return row;
+                }
+            }
+            return null;  // Si no se encuentra la fila con el ID del empleado
+        }
+
+
+
+        protected void btnGuardarAgregado_Click(object sender, EventArgs e)
+        {
+            // Obtener el ID del empleado desde el HiddenField
+            int empleadoId;
+            if (!int.TryParse(hfEmpleadoID.Value, out empleadoId))
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "alerta", "Swal.fire('Error', 'No se pudo obtener el ID del empleado.', 'error');", true);
+                return;
+            }
+
+            // Obtener la fecha seleccionada
+            DateTime fechaSolicitud;
+            if (!DateTime.TryParse(TextBox2.Text, out fechaSolicitud))
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "alerta", "Swal.fire('Error', 'Fecha inválida.', 'error');", true);
+                return;
+            }
+
+            // Obtener el tipo de día seleccionado
+            string medioDia = DropDownListDia.SelectedValue;
+            if (string.IsNullOrEmpty(medioDia))
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "alerta", "Swal.fire('Error', 'Debe seleccionar el tipo de día.', 'error');", true);
+                return;
+            }
+
+            // Llamar al procedimiento almacenado
+            EjecutarProcedimientoAlmacenado(empleadoId, fechaSolicitud, medioDia);
+            ResetControls();
+        }
+
+
+        private void EjecutarProcedimientoAlmacenado(int empleadoId, DateTime fecha, string medioDia)
+        {
+            string connectionString = ConfigurationManager.ConnectionStrings["conexion"].ConnectionString;
+
+            if (medioDia != "N" && medioDia != "M" && medioDia != "T")
+            {
+                ScriptManager.RegisterStartupScript(this, GetType(), "alerta", "Swal.fire('El valor de MedioDia debe ser N, M o T.', '', 'error');", true);
+                return;
+            }
+
+            using (SqlConnection con = new SqlConnection(connectionString))
+            {
+                try
+                {
+                    using (SqlCommand cmd = new SqlCommand("AgregarDiaVacaciones", con))
+                    {
+                        cmd.CommandType = CommandType.StoredProcedure;
+
+                        cmd.Parameters.AddWithValue("@ID_Empleado", empleadoId);
+                        cmd.Parameters.AddWithValue("@Fecha", fecha);
+                        cmd.Parameters.AddWithValue("@MedioDia", medioDia);
+
+                        con.Open();
+                        cmd.ExecuteNonQuery();
+                        con.Close();
+
+                        ScriptManager.RegisterStartupScript(this, GetType(), "alerta", "Swal.fire('Solicitud registrada con éxito', '', 'success');", true);
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    ScriptManager.RegisterStartupScript(this, GetType(), "alerta", $"Swal.fire('Error SQL', '{ex.Message}', 'error');", true);
+                }
+                catch (Exception ex)
+                {
+                    ScriptManager.RegisterStartupScript(this, GetType(), "alerta", $"Swal.fire('Error inesperado', '{ex.Message}', 'error');", true);
+                }
+            }
+
+            // Recargar los datos de la tabla después de guardar
+            CargarDatos();
+        }
+
+
+        private void ResetControls()
+        {
+            // Resetear el formulario del modal
+            DropDownListDia.SelectedIndex = 0;  // Restablece el DropDownList
+            TextBox2.Text = "";  // Restablece el TextBox de la fecha
+
+            // Cerrar el modal
+            ScriptManager.RegisterStartupScript(this, GetType(), "CerrarModal", "cerrarModalVadAdd();", true);
+        }
+
+
 
         protected void btnGuardar_Click(object sender, EventArgs e)
         {
@@ -275,6 +381,8 @@ namespace WebAppVacaciones.Pages
                     ScriptManager.RegisterStartupScript(this, GetType(), "alerta", $"Swal.fire('Error', '{ex.Message}', 'error');", true);
                 }
             }
+            // Recargar los datos de la tabla después de guardar
+            CargarDatos();
         }
 
         private void CargarPuestos()

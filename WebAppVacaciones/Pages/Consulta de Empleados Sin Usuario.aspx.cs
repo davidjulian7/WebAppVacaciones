@@ -190,6 +190,19 @@ namespace WebAppVacaciones.Pages
         {
             try
             {
+                // Validar que se haya seleccionado un Puesto y un PDV
+                if (DropDownListPuesto.SelectedValue == "0")
+                {
+                    MostrarMensaje("Debe seleccionar un puesto válido.", true);
+                    return;
+                }
+
+                if (ddlPDV.SelectedValue == "0")
+                {
+                    MostrarMensaje("Debe seleccionar un PDV válido.", true);
+                    return;
+                }
+
                 // Obtener la conexión desde el archivo Web.config
                 string connectionString = ConfigurationManager.ConnectionStrings["conexion"].ConnectionString;
 
@@ -221,6 +234,8 @@ namespace WebAppVacaciones.Pages
                 MostrarMensaje("Error al actualizar empleado: " + ex.Message, true);
             }
         }
+
+
 
 
         private void MostrarMensaje(string mensaje, bool esError)
